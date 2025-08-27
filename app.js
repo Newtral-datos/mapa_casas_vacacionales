@@ -13,7 +13,7 @@ const config = {
   footer: '',
   chapters: [
     {
-      id: 'slug-style-id',
+      id: 'cap-1',
       alignment: 'center',
       hidden: true,
       title: '',
@@ -37,17 +37,16 @@ const config = {
       legend: []
     },
     {
-      id: 'slug-style-id-2',
+      id: 'cap-2',
       alignment: 'center',
       hidden: false,
       title: '',
       description: `
         <p>En España hay <span class="highlight-newtral">385.105 viviendas</span> destinadas al alquiler vacacional, según los datos del Instituto Nacional de Estadística (INE).</p>
-        <p>Pese a que es un 2% del total de hogares que hay en total, en algunas localidades muy turísticas el porcentaje de casas vacacionales supone hasta <span class="highlight-newtral">un cuarto</span> del parque inmobiliario.</p> 
         `,
       location: {
         center: [-3.792046024703072, 40.376497228975055],
-        zoom: 6, pitch: 0, bearing: 0, speed: 1, curve: 0.7
+        zoom: 5, pitch: 0, bearing: 0, speed: 1, curve: 0.7
       },
       mapAnimation: 'flyTo',
       rotateAnimation: false,
@@ -64,46 +63,64 @@ const config = {
       legend: []
     },
     {
-      id: 'slug-style-id-2',
+      id: 'cap-3',
+      keepFilter: true,
       alignment: 'center',
       hidden: false,
       title: '',
       description: `
-        <p>Por comunidades autónomas, <span class="highlight-newtral">Canarias</span> es la que tiene la mayor tasa media de viviendas turísticas por cada mil hogares.</p>
-        <div class="iframe-container">
-          <iframe title="" aria-label="Gráfico de columnas" id="datawrapper-chart-d1Ffv" src="https://datawrapper.dwcdn.net/d1Ffv/" scrolling="no" frameborder="0" style="width: 0; min-width: 100% !important; border: none;" height="427" data-external="1"></iframe>
-        </div>
+        <p>Pese a que es un 2% del total de hogares que hay en total, en algunas localidades muy turísticas el porcentaje de casas vacacionales supone hasta un cuarto del parque inmobiliario.</p> 
+        <p>Y, en un gran número de municipios, superan el <span class="highlight-newtral">5% del total de viviendas</span>.
       `,
       location: {
         center: [-3.792046024703072, 40.376497228975055],
-        zoom: 6, pitch: 0, bearing: 0, speed: 1, curve: 0.7
+        zoom: 5, pitch: 0, bearing: 0, speed: 1, curve: 0.7
       },
       mapAnimation: 'flyTo',
       rotateAnimation: false,
       onChapterEnter: function () {
         ['edificios_lote_1','edificios_lote_2','edificios_lote_3','edificios_lote_4','edificios_lote_5','edificios_lote_6','edificios_lote_7','edificios_lote_8','edificios_lote_9']
           .forEach(layer => {
-            if (window.map && map.getLayer(layer)) {
-              map.setPaintProperty(layer, 'fill-color', ["case", [">=", ["get","beginning"], 0], "#01f3b3", "#01f3b3"]);
-              map.setPaintProperty(layer, 'fill-outline-color', ["case", [">=", ["get","beginning"], 0], "#01f3b3", "#01f3b3"]);
-            }
+            if (window.map && map.getLayer(layer)) map.setLayoutProperty(layer, 'visibility', 'none');
+          });
+    
+        if (window.map && map.getLayer(SINGLE_LAYER.layerId)) {
+          map.setFilter(
+            SINGLE_LAYER.layerId,
+            ['all',
+              ['has', VAR_NAME],
+              ['>=', ['to-number', ['get', VAR_NAME]], 5]
+            ]
+          );
+    
+          const opacityProp = (LAYER_TYPE === 'fill')
+            ? 'fill-opacity'
+            : (LAYER_TYPE === 'circle' ? 'circle-opacity' : 'line-opacity');
+          map.setPaintProperty(SINGLE_LAYER.layerId, opacityProp, 0.9);
+          map.setLayoutProperty(SINGLE_LAYER.layerId, 'visibility', 'visible');
+        }
+      },
+      onChapterExit: function () {
+        if (window.map && map.getLayer(SINGLE_LAYER.layerId)) {
+          map.setFilter(SINGLE_LAYER.layerId, null);
+        }
+          ['edificios_lote_1','edificios_lote_2','edificios_lote_3','edificios_lote_4','edificios_lote_5','edificios_lote_6','edificios_lote_7','edificios_lote_8','edificios_lote_9']
+          .forEach(layer => {
+            if (window.map && map.getLayer(layer)) map.setLayoutProperty(layer, 'visibility', 'visible');
           });
       },
-      onChapterExit: function () {},
       legend: []
     },
     {
-      id: 'second-slug-style-id',
+      id: 'cap-4',
       alignment: 'center',
       hidden: false,
       title: '',
-      description: `<p>Las <span class="highlight-newtral">provincias insulares</span> (Las Palmas, Baleares y Santa Cruz de Tenerife) son las que mayor tasa media de alquileres vacacionales tiene por cada mil hogares.</p>
-      <div class="iframe-container">
-        <iframe title="" aria-label="Gráfico de columnas" id="datawrapper-chart-NSGgy" src="https://datawrapper.dwcdn.net/NSGgy/" scrolling="no" frameborder="0" style="width: 0; min-width: 100% !important; border: none;" height="427" data-external="1"></iframe>
-      </div>`,
+      description: `<p>Esto sucede, por ejemlpo, en los muncipios de <span class="highlight-newtral">Yaiza</span> (Lanzarote) y <span class="highlight-newtral">La Oliva</span> (Fuerteventura), en los que el 24,4% y el 23,8% de sus viviendas, respectivamente, están destinadas al alquiler vacacional.</p>
+      <p>Yaiza ha pasado de tener 1.711 viviendas vacacionales en agosto de 2020 a 2.524 en mayo de este año, es decir, <span class="highlight-newtral">ha aumentado casi en un 50% su oferta turística</span>.</p>`,
       location: {
-        center: [-15.136224063444702, 28.13393724665955],
-        zoom: 7, pitch: 0, bearing: 0, speed: 1, curve: 0.7
+        center: [-13.858877362056273, 28.80545566038115],
+        zoom: 9.5, pitch: 0, bearing: 0, speed: 1, curve: 0.7
       },
       mapAnimation: 'flyTo',
       rotateAnimation: false,
@@ -118,18 +135,48 @@ const config = {
       },
       onChapterExit: function () {},
       legend: []
-    },
+    },       
     {
-      id: 'third-slug-style-id',
+      id: 'cap-5',
       alignment: 'center',
       hidden: false,
       title: '',
-      description: `<p>Los municipios canarios de <span class="highlight-newtral">Yaiza</span> (Lanzarote) y <span class="highlight-newtral">La Oliva</span> (Fuerteventura) son las localidades españolas con más alquileres vacacionales en proporción a su parque inmobiliario.</p>
-      <p>El 24,4% y el 23,8% de sus viviendas respectivamente son vacacionales.</p>
-      <p>Yaiza ha pasado de tener 1.711 viviendas vacacionales en agosto de 2020 a 2.524 en mayo de este año, es decir, <span class="highlight-newtral">ha aumentado casi en un 50% su oferta turística</span>.</p>`,
+      description: `
+        <p><span class="highlight-newtral">Canarias</span> es la comunidad con mayor tasa media de viviendas turísticas por cada mil hogares.</p>
+        <div class="iframe-container">
+          <iframe title="" aria-label="Gráfico de columnas" id="datawrapper-chart-d1Ffv" src="https://datawrapper.dwcdn.net/d1Ffv/" scrolling="no" frameborder="0" style="width: 0; min-width: 100% !important; border: none;" height="427" data-external="1"></iframe>
+        </div>
+      `,
       location: {
-        center: [-13.858877362056273, 28.80545566038115],
-        zoom: 10, pitch: 0, bearing: 0, speed: 1, curve: 0.7
+        center: [-15.503970110304348, 28.211256073228892],
+        zoom: 6, pitch: 0, bearing: 0, speed: 1, curve: 0.7
+      },
+      mapAnimation: 'flyTo',
+      rotateAnimation: false,
+      onChapterEnter: function () {
+        ['edificios_lote_1','edificios_lote_2','edificios_lote_3','edificios_lote_4','edificios_lote_5','edificios_lote_6','edificios_lote_7','edificios_lote_8','edificios_lote_9']
+          .forEach(layer => {
+            if (window.map && map.getLayer(layer)) {
+              map.setPaintProperty(layer, 'fill-color', ["case", [">=", ["get","beginning"], 0], "#01f3b3", "#01f3b3"]);
+              map.setPaintProperty(layer, 'fill-outline-color', ["case", [">=", ["get","beginning"], 0], "#01f3b3", "#01f3b3"]);
+            }
+          });
+      },
+      onChapterExit: function () {},
+      legend: []
+    },
+    {
+      id: 'cap-6',
+      alignment: 'center',
+      hidden: false,
+      title: '',
+      description: `<p>Las <span class="highlight-newtral">provincias insulares</span> (Las Palmas, Baleares y Santa Cruz de Tenerife) son las que mayor tasa media de alquileres vacacionales tiene por cada mil hogares.</p>
+      <div class="iframe-container">
+        <iframe title="" aria-label="Gráfico de columnas" id="datawrapper-chart-NSGgy" src="https://datawrapper.dwcdn.net/NSGgy/" scrolling="no" frameborder="0" style="width: 0; min-width: 100% !important; border: none;" height="427" data-external="1"></iframe>
+      </div>`,
+      location: {
+        center: [3.0311161577265047, 39.602710646181826],
+        zoom: 7, pitch: 0, bearing: 0, speed: 1, curve: 0.7
       },
       mapAnimation: 'flyTo',
       rotateAnimation: false,
@@ -155,7 +202,7 @@ const config = {
       description: '<p>Puedes mover, acercar y explorar el mapa por tu cuenta. Usa el <span class="highlight-newtral">botón</span> de la esquina superior izquierda.</p>',
       location: {
         center: [-3.792046024703072, 40.376497228975055],
-        zoom: 5.5, pitch: 0, bearing: 0, speed: 1, curve: 0.7
+        zoom: 5.3, pitch: 0, bearing: 0, speed: 1, curve: 0.7
       },
       mapAnimation: 'flyTo',
       rotateAnimation: false,
@@ -183,6 +230,7 @@ const config = {
     }
   ]
 };
+
 /* ========================================================= */
 
 const STYLE_URL = 'mapbox://styles/newtral/cme6z10k3017s01qsdmpehpb2';
@@ -286,12 +334,10 @@ function miniLineSVG(
 ) {
   if (!Array.isArray(values) || values.length === 0) return null;
 
-  // Área interior (dejamos sitio a las etiquetas Y a la izquierda y X abajo)
   const margin = { top: 6, right: 6, bottom: 18, left: 34 };
   const innerW = Math.max(1, width - margin.left - margin.right);
   const innerH = Math.max(1, height - margin.top - margin.bottom);
 
-  // Normalizamos: números o null
   const data = values.map(v => (Number.isFinite(v) ? Number(v) : null));
   const finiteVals = data.filter(v => Number.isFinite(v));
   if (finiteVals.length === 0) return null;
@@ -307,7 +353,6 @@ function miniLineSVG(
     return margin.top + (1 - t) * innerH;
   };
 
-  // --- Segmentos contiguos (para NO puentear huecos) ---
   const segments = [];
   let current = [];
   for (let i = 0; i < data.length; i++) {
@@ -333,7 +378,6 @@ function miniLineSVG(
   const ariaLabel =
     `Mini serie temporal (${finiteVals.length} puntos). Rango fijo ${yMin}%–${yMax}%.`;
 
-  // Grid horizontal + etiquetas Y
   const step = (yMax - yMin) / (yTickCount - 1);
   const ticks = Array.from({ length: yTickCount }, (_, i) => yMin + i * step);
   const gridLines = ticks.map(tv => {
@@ -349,10 +393,8 @@ function miniLineSVG(
     `;
   }).join('');
 
-  // Clip para que las líneas no sobresalgan del área
   const clipId = `clip-${Math.random().toString(36).slice(2, 9)}`;
 
-  // Paths por segmento (solo tramos de >=2 puntos forman línea)
   const paths = segments
     .filter(seg => seg.length >= 2)
     .map(seg => {
@@ -361,7 +403,6 @@ function miniLineSVG(
     })
     .join('\n');
 
-  // Puntos: para tramos de tamaño 1 (o todos, si se pide)
   let points = '';
   if (pointStyle !== 'none') {
     const circles = [];
@@ -370,7 +411,6 @@ function miniLineSVG(
         if (Number.isFinite(v)) circles.push([xPos(i), yPos(v)]);
       });
     } else {
-      // 'isolated': solo segmentos de tamaño 1
       segments.filter(seg => seg.length === 1).forEach(seg => circles.push(seg[0]));
     }
     points = circles.map(([cx, cy]) =>
@@ -446,17 +486,14 @@ function tooltipHTMLFromFeature(feature) {
   ];
   
 
-  // --- formatos pedidos ---
   const t2020Txt = Number.isFinite(v2020)
     ? `${v2020.toFixed(2).replace('.', ',')}%`
     : 'Sin datos';
 
-  // 1) coma como decimal y 1 decimal
   const t2025Txt = Number.isFinite(v2025)
   ? `${(v2025 * 10).toFixed(1).replace('.', ',')}`
   : 'Sin datos';
 
-  // 2) entero con separador de miles como punto
   const tabs2025Txt = Number.isFinite(abs2025)
   ? new Intl.NumberFormat('es-ES', {
       useGrouping: true,
@@ -551,8 +588,8 @@ function mountGeocoder() {
   geocoder = new window.MapboxGeocoder({
     accessToken: config.accessToken,
     mapboxgl: window.mapboxgl,
-    marker: false, // pon true si quieres un pin
-    flyTo: false,  // desactivado: controlaremos el vuelo nosotros
+    marker: false,
+    flyTo: false,
     placeholder: 'Buscar lugar…'
   });
 
@@ -662,7 +699,7 @@ function setMapInteractivity(enabled) {
   map.touchZoomRotate[fn]();
 }
 
-/* ====== Capa única (vector) ====== */
+/* ====== Capa única ====== */
 function addSingleLayer() {
   map.addSource(SINGLE_LAYER.sourceId, { type: 'vector', url: SINGLE_LAYER.url });
   if (LAYER_TYPE === 'circle') {
@@ -702,7 +739,6 @@ function addSingleLayer() {
   }
 }
 
-/* ====== Choropleth auto con cuantiles sesgados ====== */
 function applyChoroplethIfReady() {
   try {
     const feats = map.querySourceFeatures(SINGLE_LAYER.sourceId, { sourceLayer: SINGLE_LAYER.sourceLayer });
@@ -741,16 +777,36 @@ function applyChoroplethIfReady() {
 function setupScroller() {
   if (!window.scrollama) return;
   scroller = window.scrollama();
-  scroller
-    .setup({ step: '.step', offset: 0.5, debug: false })
-    .onStepEnter((resp) => {
-      let chapterIndex = resp.index;
-      if (resp.direction === 'up' && chapterIndex > 0) chapterIndex -= 1;
-      if (chapterIndex === activeChapterIndex) return;
 
-      const current = config.chapters[chapterIndex];
+  function clearMainLayer() {
+    if (window.map && map.getLayer(SINGLE_LAYER.layerId)) {
+      map.setFilter(SINGLE_LAYER.layerId, null);
+      map.setLayoutProperty(SINGLE_LAYER.layerId, 'visibility', 'visible');
+
+      const opacityProp = (LAYER_TYPE === 'fill')
+        ? 'fill-opacity'
+        : (LAYER_TYPE === 'circle' ? 'circle-opacity' : 'line-opacity');
+      map.setPaintProperty(SINGLE_LAYER.layerId, opacityProp, 0.9);
+    }
+  }
+
+  scroller
+    .setup({ step: '.step', offset: 0.55, debug: false })
+    .onStepEnter((resp) => {
+      const nextIndex = resp.index;
+
+      if (nextIndex === activeChapterIndex) return;
+
+      const prev = config.chapters[activeChapterIndex];
+      if (prev && typeof prev.onChapterExit === 'function') {
+        try { prev.onChapterExit(); } catch (e) { console.warn('onChapterExit error:', e); }
+      }
+
+      const current = config.chapters[nextIndex];
       if (!current) return;
-      activeChapterIndex = chapterIndex;
+      activeChapterIndex = nextIndex;
+
+      if (!current.keepFilter) clearMainLayer();
 
       const onMoveEnd = () => {
         updateLegend(current.legend || []);
@@ -824,7 +880,6 @@ function exitFreeMode() {
   setTimeout(() => map && map.resize(), 50);
 }
 
-/* ====== Render del DOM estático (header, features, footer) ====== */
 function renderStaticDOM() {
   // Tema
   document.body.classList.toggle('dark', config.theme === 'dark');
@@ -874,7 +929,7 @@ window.addEventListener('DOMContentLoaded', () => {
   btn.addEventListener('click', () => (freeMode ? exitFreeMode() : enterFreeMode()));
 
   // Mapbox GL init
-  window.mapboxgl = window.mapboxgl || mapboxgl; // por si UMD
+  window.mapboxgl = window.mapboxgl || mapboxgl;
   mapboxgl.accessToken = config.accessToken;
 
   map = new mapboxgl.Map({
@@ -889,7 +944,6 @@ window.addEventListener('DOMContentLoaded', () => {
   });
   window.map = map;
 
-  // Minimap globo si procede
   map.on('load', () => {
     if (config.inset && window.GlobeMinimap) {
       const GlobeMinimap = window.GlobeMinimap.default || window.GlobeMinimap;
