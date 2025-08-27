@@ -634,14 +634,50 @@ function unmountGeocoder() {
 }
 
 /* ====== Leyenda y estilos ====== */
+function ensureLegendToggle() {
+  const legendEl = document.getElementById('legend');
+  if (!legendEl) return;
+
+  let btn = document.getElementById('legend-toggle');
+  if (!btn) {
+    // Si alguien quita el botón del HTML, lo recreamos
+    btn = document.createElement('button');
+    btn.id = 'legend-toggle';
+    btn.className = 'legend-toggle';
+    btn.setAttribute('aria-controls', 'legend-content');
+    btn.textContent = 'Leyenda';
+    legendEl.prepend(btn);
+  }
+
+  // Estado inicial desde localStorage
+  const collapsed = localStorage.getItem('legendCollapsed') === '1';
+  legendEl.classList.toggle('collapsed', collapsed);
+  btn.setAttribute('aria-expanded', (!collapsed).toString());
+
+  // Toggle
+  btn.onclick = () => {
+    const isCollapsed = legendEl.classList.toggle('collapsed');
+    btn.setAttribute('aria-expanded', (!isCollapsed).toString());
+    localStorage.setItem('legendCollapsed', isCollapsed ? '1' : '0');
+  };
+}
+
 function updateLegend(legendData) {
   const legendEl = document.getElementById('legend');
   const legendContent = document.getElementById('legend-content');
   if (!legendEl || !legendContent) return;
+
+  ensureLegendToggle();
+
   legendContent.innerHTML = '';
   const data = (legendData && legendData.length) ? legendData : autoLegend;
-  if (!data || data.length === 0) { legendEl.classList.add('hidden'); return; }
+
+  if (!data || data.length === 0) {
+    legendEl.classList.add('hidden');
+    return;
+  }
   legendEl.classList.remove('hidden');
+
   data.forEach((item) => {
     const row = document.createElement('div'); row.className = 'legend-item';
     const color = document.createElement('span'); color.className = 'legend-color'; color.style.backgroundColor = item.color;
@@ -649,7 +685,15 @@ function updateLegend(legendData) {
     row.appendChild(color); row.appendChild(label);
     legendContent.appendChild(row);
   });
+
+  const btn = document.getElementById('legend-toggle');
+  if (btn) {
+    const base = 'Tasa de casas vacacionales';
+    const sub = 'Por cada mil viviendas';
+    btn.innerHTML = `${base} <small style="opacity:.8;margin-left:.5ch;">${sub}</small>`;
+  }
 }
+
 function verifyChapterColors() {
   if (!map.getLayer(SINGLE_LAYER.layerId)) return;
   const fillProp   = LAYER_TYPE === 'circle' ? 'circle-color' : (LAYER_TYPE === 'line' ? 'line-color' : 'fill-color');
