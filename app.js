@@ -10,7 +10,7 @@ const config = {
   title: '',
   subtitle: '',
   byline: '',
-  footer: 'Datos: Newtral, Mapbox, OpenStreetMap',
+  footer: '',
   chapters: [
     {
       id: 'slug-style-id',
@@ -146,13 +146,13 @@ const config = {
       legend: []
     },
 
-    // ===== Capítulo especial: MODO LIBRE =====
+    // ===== MODO LIBRE =====
     {
       id: 'modo-libre',
       alignment: 'center',
       hidden: false,
       title: 'Explora libremente',
-      description: 'Puedes mover, acercar y explorar el mapa por tu cuenta. Usa el botón para volver a la historia.',
+      description: '<p>Puedes mover, acercar y explorar el mapa por tu cuenta. Usa el <span class="highlight-newtral">botón</span> de la esquina superior izquierda.</p>',
       location: {
         center: [-3.792046024703072, 40.376497228975055],
         zoom: 5.5, pitch: 0, bearing: 0, speed: 1, curve: 0.7
@@ -245,10 +245,23 @@ function buildStepExpression(breaks, colors) {
   return expr;
 }
 function legendFromBreaks(breaks, min, max, colors) {
+  let bounds = [min, ...breaks, max];
+
+  bounds = bounds.map(v => Number((v * 10).toFixed(1)));
+  bounds = [...new Set(bounds)];
+
   const items = [];
-  const bounds = [min, ...breaks, max];
-  for (let i=0; i<bounds.length-1; i++) {
-    items.push({ color: colors[i], label: `${bounds[i].toFixed(2)}% – ${bounds[i+1].toFixed(2)}%` });
+  const numIntervals = bounds.length - 1;
+
+  const colorsUsed = colors.slice(-numIntervals);
+
+  for (let i = 0; i < numIntervals; i++) {
+    const val1 = bounds[i].toFixed(1).replace('.', ',');
+    const val2 = bounds[i + 1].toFixed(1).replace('.', ',');
+    items.push({
+      color: colorsUsed[i],
+      label: `${val1} – ${val2}`
+    });
   }
   return items;
 }
@@ -259,15 +272,15 @@ function miniLineSVG(
     stroke = '#01f3b3',
     width = 180,
     height = 90,
-    refLine = 50,        // valor de referencia en %
+    refLine = 50,
     refStroke = '#e2e8f0',
     refDash = '4,3',
     startLabel = '2020',
     endLabel = '2025',
     showXAxisLabels = true,
-    yTickCount = 5,      // nº de ticks en Y
+    yTickCount = 5,
     yLabelFormatter = v => `${v.toFixed(0)}%`,
-    pointStyle = 'isolated', // 'isolated' | 'all' | 'none'
+    pointStyle = 'isolated',
     pointRadius = 2
   } = {}
 ) {
@@ -283,9 +296,9 @@ function miniLineSVG(
   const finiteVals = data.filter(v => Number.isFinite(v));
   if (finiteVals.length === 0) return null;
 
-  // --- Rango fijo Y de 0 a 25 ---
+  // --- Rango fijo Y ---
   const yMin = 0;
-  const yMax = 30;
+  const yMax = 250;
 
   // Escalas
   const xPos = i => margin.left + (innerW * i) / Math.max(1, data.length - 1);
@@ -417,17 +430,39 @@ function tooltipHTMLFromFeature(feature) {
   const v2024   = Number(feature?.properties?.tasa_2024M02);
   const v2024_2 = Number(feature?.properties?.tasa_2024M08);
   const v2025   = Number(feature?.properties?.tasa_2025M05);
+  const abs2025 = Number(feature?.properties?.abs_2025M05);
 
   const values = [
-    v2020, v2021, v2021_2,
-    v2022, v2022_2,
-    v2023, v2023_2,
-    v2024, v2024_2,
-    v2025
+    v2020   * 10,
+    v2021   * 10,
+    v2021_2 * 10,
+    v2022   * 10,
+    v2022_2 * 10,
+    v2023   * 10,
+    v2023_2 * 10,
+    v2024   * 10,
+    v2024_2 * 10,
+    v2025   * 10
   ];
+  
 
-  const t2020Txt = Number.isFinite(v2020) ? `${v2020.toFixed(2)}%` : 'Sin datos';
-  const t2025Txt = Number.isFinite(v2025) ? `${v2025.toFixed(2)}%` : 'Sin datos';
+  // --- formatos pedidos ---
+  const t2020Txt = Number.isFinite(v2020)
+    ? `${v2020.toFixed(2).replace('.', ',')}%`
+    : 'Sin datos';
+
+  // 1) coma como decimal y 1 decimal
+  const t2025Txt = Number.isFinite(v2025)
+  ? `${(v2025 * 10).toFixed(1).replace('.', ',')}`
+  : 'Sin datos';
+
+  // 2) entero con separador de miles como punto
+  const tabs2025Txt = Number.isFinite(abs2025)
+  ? new Intl.NumberFormat('es-ES', {
+      useGrouping: true,
+      maximumFractionDigits: 0
+    }).format(abs2025)
+  : 'Sin datos';
 
   const chart = miniLineSVG(values, {
     stroke: '#01f3b3',
@@ -435,8 +470,8 @@ function tooltipHTMLFromFeature(feature) {
     endLabel: '2025',
     width: 200,
     height: 110,
-    yTickCount: 6,            // 0,5,10,15,20,25
-    yLabelFormatter: v => `${v.toFixed(0)}%`,
+    yTickCount: 6,
+    yLabelFormatter: v => `${v.toFixed(0)}`,
     pointStyle: 'isolated',
     pointRadius: 2
   });
@@ -445,8 +480,9 @@ function tooltipHTMLFromFeature(feature) {
     <div class="popup-container">
       <div><span class="popup-titulo">Municipio:</span> <span class="popup-construccion">${mun}</span></div>
       <div><span class="popup-etiqueta">Provincia:</span> ${prov}</div>
-      <div><span class="popup-etiqueta">Tasa 2020-08:</span> ${t2020Txt}</div>
-      <div><span class="popup-etiqueta">Tasa 2025-05:</span> ${t2025Txt}</div>
+      <div><span class="popup-etiqueta">Número total de alquileres vacacionales:</span> ${tabs2025Txt}</div>
+      <div><span class="popup-etiqueta">Tasa de viviendas vacacionales por cada mil hogares:</span> ${t2025Txt}</div>
+      <div><span class="popup-etiqueta">Evolución de esta tasa:</div>
       ${chart || '<div style="margin-top:8px;font-size:12px;color:#666;">Sin datos suficientes para el gráfico</div>'}
     </div>
   `;
@@ -508,28 +544,55 @@ function detachFreeModeTooltip() {
 function mountGeocoder() {
   if (!map || geocoderMounted) return;
   if (!window.MapboxGeocoder) {
-    console.error('MapboxGeocoder no está disponible. Revisa la etiqueta <script> del plugin.');
+    console.error('MapboxGeocoder no está disponible.');
     return;
   }
+
   geocoder = new window.MapboxGeocoder({
     accessToken: config.accessToken,
     mapboxgl: window.mapboxgl,
-    marker: false,
-    flyTo: { speed: 1.2, curve: 1.0, essential: true },
-    placeholder: 'Buscar lugar…',
-    container: 'geocoder-container'
+    marker: false, // pon true si quieres un pin
+    flyTo: false,  // desactivado: controlaremos el vuelo nosotros
+    placeholder: 'Buscar lugar…'
   });
-  map.addControl(geocoder);
+
+  geocoder.addTo('#geocoder-container');
   geocoderMounted = true;
-  geocoder.on('result', () => onLayerMouseLeave());
+
+  geocoder.on('result', (e) => {
+    onLayerMouseLeave?.();
+
+    const bbox = e?.result?.bbox;
+    const center = e?.result?.center || e?.result?.geometry?.coordinates;
+
+    if (Array.isArray(bbox) && bbox.length === 4) {
+      map.fitBounds(
+        [[bbox[0], bbox[1]], [bbox[2], bbox[3]]],
+        { padding: 48, duration: 1200, pitch: map.getPitch(), bearing: map.getBearing() }
+      );
+    } else if (Array.isArray(center) && center.length === 2) {
+      map.flyTo({
+        center,
+        zoom: Math.max(map.getZoom(), 11),
+        speed: 1.2,
+        curve: 1.2,
+        essential: true
+      });
+    }
+  });
+
+  geocoder.on('clear', () => {
+
+  });
 }
+
 function unmountGeocoder() {
   if (geocoder && geocoderMounted) {
-    try { map.removeControl(geocoder); } catch {}
+    try { geocoder.remove(); } catch {}
     geocoder = null;
     geocoderMounted = false;
-    const overlay = document.getElementById('geocoder-container');
-    if (overlay) overlay.innerHTML = '';
+    const el = document.getElementById('geocoder-container');
+    if (el) el.innerHTML = '';
   }
 }
 
