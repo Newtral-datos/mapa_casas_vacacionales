@@ -21,7 +21,7 @@
   <style>
     html, body{ margin:0; padding:0; overflow-x:hidden; font-family: Helvetica, sans-serif; }
     a, a:hover, a:visited{ color:#0071bc; }
-
+  
     .toggle-free{
       position: fixed;
       top: 16px;
@@ -33,9 +33,9 @@
       box-shadow:0 2px 8px rgba(0,0,0,0.25);
     }
     .toggle-free:hover{ transform: translateY(-1px); }
-
+  
     #map{ position: fixed; inset: 0; width: 100vw; height: 100vh; margin: 0 auto; z-index: 1; }
-
+  
     /* Geocoder y popup */
     #map-container{ position: relative; width: 100%; max-width: 1200px; height: 600px; margin: auto; border-radius: 12px; overflow: hidden; }
     #geocoder-container {
@@ -53,7 +53,7 @@
     .mapboxgl-ctrl-geocoder input{
       padding-left: 40px !important; background: white !important; border: none !important; font-size: 14px; box-sizing: border-box;
     }
-
+  
     .mapboxgl-popup-content{
       font-family: 'Helvetica', sans-serif; background: #ffffff; padding: 14px; border-radius: 10px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); max-width: 280px; color: #222; line-height: 1.5; border: none;
@@ -64,7 +64,7 @@
       background-color: #01f3b3; color: #000; display: inline-block; padding: 6px 12px; border-radius: 6px;
       font-weight: bold; margin-bottom: 10px; font-size: 16px;
     }
-
+  
     #legend-container{
       position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.95); border-radius: 6px;
       padding: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000; font-family: 'Helvetica', sans-serif;
@@ -84,12 +84,12 @@
       position: absolute; bottom: -20px; background: rgba(255,255,255,0.9); padding: 2px 6px; border-radius: 4px;
       font-size: 12px; color: #333; display: none; pointer-events: none;
     }
-
+  
     .tooltip.mapboxgl-popup-content{
       position: absolute; z-index: 1100; display: none; pointer-events: none;
     }
     .tooltip.show{ display:block; opacity:1; transform:translateY(-2px); }
-
+  
     #header{ margin:auto; width:100%; position:relative; z-index:5; text-align:center; }
     #header h1, #header h2, #header p{ margin:0; padding:1vh 1vw; color:white; }
     #footer{ width:100%; min-height:5vh; padding-top:1vh; padding-bottom:1vh; text-align:center; line-height:20px; font-size:12px; position:relative; z-index:5; color:white; }
@@ -100,12 +100,55 @@
     .step div{ display:flex; flex-direction:column; gap:10px; }
     .step h3{ font-size:16px; margin:0 0 10px 0; font-weight:bold; color:white; }
     .step p{ margin:0; color:white; font-size:14px; }
-
-    .legend{ position:fixed; top:20px; right:20px; background:rgba(0,0,0,0.8); color:white; padding:10px; border-radius:5px; margin-top:50px; z-index:10; font-size:12px; max-width:220px; box-shadow:0 2px 5px rgba(0,0,0,0.3); }
-    .legend h4{ margin:0 0 10px 0; font-size:14px; font-weight:bold; }
+  
+    /* === Leyenda plegable === */
+    .legend {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 0;
+      border-radius: 8px;
+      margin-top: 50px;
+      z-index: 10;
+      font-size: 12px;
+      max-width: 260px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    .legend-toggle {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      width: 100%;
+      padding: 10px 12px;
+      background: transparent;
+      color: inherit;
+      border: 0;
+      font: 700 13px/1 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      cursor: pointer;
+      text-align: left;
+    }
+    .legend-toggle::after {
+      content: '▾';
+      margin-left: auto;
+      transition: transform .18s ease;
+      opacity: .9;
+    }
+    #legend-content {
+      padding: 10px 12px 12px;
+    }
+    .legend.collapsed #legend-content {
+      display: none;
+    }
+    .legend.collapsed .legend-toggle::after {
+      transform: rotate(-90deg);
+    }
     .legend-item{ display:flex; align-items:center; margin-bottom:5px; }
     .legend-color{ width:15px; height:15px; margin-right:8px; border:1px solid #fff; border-radius:3px; }
     .legend.hidden{ display:none; }
+  
     .chapter-content iframe{ max-width:100%; width:100%; height:480px; border:none; margin-top:30px; display:block; }
     .iframe-container{ background-color:#323D4D; padding:0; border-radius:5px; max-width:100%; margin-top:10px; }
     .popup-chart {
@@ -148,12 +191,13 @@
       .mapboxgl-ctrl-geocoder input{ padding-left: 36px !important; font-size: 8px; }
       #legend-value{ font-size: 8px; padding: 1px 3px; bottom: -16px; }
     }
-
+  
     body.free-mode{ overflow: hidden; }
-
+  
     .mapboxgl-canvas-container.mapboxgl-touch-zoom-rotate.mapboxgl-touch-drag-pan,
     .mapboxgl-canvas-container.mapboxgl-touch-zoom-rotate.mapboxgl-touch-drag-pan .mapboxgl-canvas{ touch-action: unset; }
   </style>
+  
 </head>
 <body class="dark">
   <!-- Botón para alternar modo libre / historia -->
@@ -167,11 +211,16 @@
 
   <!-- Leyenda -->
   <div id="legend" class="legend hidden">
-    <h4>Tasa de casas vacacionales</h4>
-    <h7>Por cada mil viviendas</h7>
-    <br><br>
+    <button id="legend-toggle"
+            class="legend-toggle"
+            aria-expanded="true"
+            aria-controls="legend-content">
+      Tasa de casas vacacionales
+      <small style="opacity:.8;">Por cada mil viviendas</small>
+    </button>
     <div id="legend-content"></div>
   </div>
+
 
   <!-- Cabecera -->
   <div id="header" class="dark"></div>
