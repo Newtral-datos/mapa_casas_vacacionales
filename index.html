@@ -40,9 +40,14 @@
 
     /* Geocoder y popup */
     #map-container{ position: relative; width: 100%; max-width: 1200px; height: 600px; margin: auto; border-radius: 12px; overflow: hidden; }
-    #geocoder-container{
-      position: fixed; top: 10px; left: 10px; right: 10px; z-index: 1000;
-      display: flex; justify-content: flex-end; pointer-events: none;
+    #geocoder-container {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      z-index: 1000;
+      display: flex;
+      justify-content: flex-end;
+      pointer-events: auto;
     }
     .mapboxgl-ctrl-geocoder{
       height: 36px !important; width: 100%; max-width: 300px; pointer-events: all; box-sizing: border-box;
@@ -166,6 +171,8 @@
   <!-- Leyenda -->
   <div id="legend" class="legend hidden">
     <h4>Tasa de casas vacacionales</h4>
+    <h7>Por cada mil viviendas</h7>
+    <br><br>
     <div id="legend-content"></div>
   </div>
 
