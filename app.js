@@ -42,7 +42,7 @@ const config = {
       hidden: false,
       title: '',
       description: `
-        <p>En España hay <span class="highlight-newtral">385.105 viviendas</span> destinadas al alquiler vacacional, según los datos del Instituto Nacional de Estadística (INE).</p>
+        <p>En España hay <span class="highlight-newtral">381.837 viviendas</span> destinadas al alquiler vacacional, según los datos del Instituto Nacional de Estadística (INE).</p>
         `,
       location: {
         center: [-3.792046024703072, 40.376497228975055],
